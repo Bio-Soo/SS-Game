@@ -3,94 +3,133 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>네이버 스타일 사다리 게임</title>
+  <title>프리미엄 게임 센터</title>
   <style>
     :root { 
-      --naver-green: #03c75a;
-      --bg-gray: #f4f6f8;
-      --line-color: #ced4da;
-      --text-dark: #333;
+      --naver-green: #03c75a; --bg-gray: #0b0f14; --text-white: #e6eef9; --accent: #6ee7ff;
     }
     body { 
-      margin:0; font-family: 'Malgun Gothic', sans-serif; background: var(--bg-gray); color: var(--text-dark);
-      display: flex; flex-direction: column; align-items: center;
+      margin:0; font-family: 'Malgun Gothic', sans-serif; background: var(--bg-gray); color: var(--text-white);
+      overflow-x: hidden;
     }
 
-    /* 메인 컨테이너 */
-    .game-container { 
-      width: 100%; max-width: 800px; background: #fff; padding: 40px; 
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-top: 50px; border-radius: 8px;
-    }
-
-    /* 프리셋 버튼 (네이버 상단 탭 스타일) */
-    .preset-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 30px; }
+    /* 공통 이미지 버튼 스타일 */
     .img-btn {
-      min-width: 130px; height: 45px; border: 1px solid #ddd; background: #fff;
-      cursor: pointer; border-radius: 22px; font-weight: bold; font-size: 14px;
-      background-size: cover; background-position: center; transition: all 0.2s;
+      background-size: 100% 100%; background-repeat: no-repeat; background-position: center;
+      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); transition: 0.2s;
+      background-color: transparent;
     }
-    .img-btn:hover { border-color: var(--naver-green); color: var(--naver-green); }
+    .img-btn:hover { transform: scale(1.03); filter: brightness(1.1); }
 
-    /* 사다리 판 레이아웃 */
-    .ladder-board { position: relative; display: flex; flex-direction: column; align-items: center; }
-
-    /* 입력창 그리드 - 캔버스 너비와 완벽 일치 */
-    .input-row { 
-      display: flex; width: 100%; justify-content: space-between; margin-bottom: 10px;
+    /* 1. 메인 페이지 (대형 이미지 배경) */
+    #mainPage {
+      height: 100vh; width: 100%;
+      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), 
+                  url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&w=1600&q=80');
+      background-size: cover; background-position: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
+    .main-selector { display: flex; gap: 40px; }
+    .menu-card {
+      width: 220px; height: 300px; background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(15px); border: 1px solid var(--accent); border-radius: 20px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; transition: 0.3s;
+    }
+    .menu-card i { font-size: 60px; margin-bottom: 20px; }
+
+    /* 2. 게임 페이지 공통 */
+    #gamePage { display: none; padding: 20px; min-height: 100vh; text-align: center; }
+    .back-btn { 
+      position: absolute; top: 20px; left: 20px; width: 100px; height: 40px; 
+      background-image: url(''); /* BACK 버튼 이미지 주소 */
+    }
+
+    /* 사다리 프리셋 버튼 */
+    .preset-btns { display: flex; gap: 12px; justify-content: center; margin: 30px 0; }
+    .btn-835 { width: 150px; height: 55px; background-image: url(''); }
+    .btn-1435 { width: 150px; height: 55px; background-image: url(''); }
+    .btn-3535 { width: 150px; height: 55px; background-image: url(''); }
+    .btn-18335 { width: 150px; height: 55px; background-image: url(''); }
+
+    /* 사다리 판 */
+    .ladder-board { position: relative; display: inline-block; margin-top: 20px; }
+    .label-grid { display: flex; width: 800px; justify-content: space-around; margin: 10px 0; }
     .input-box { flex: 1; display: flex; justify-content: center; }
     .input-box input {
-      width: 80%; padding: 10px 0; border: 1px solid #e5e5e5; border-radius: 4px;
-      text-align: center; font-size: 14px; outline: none; transition: border 0.2s;
+      width: 70px; padding: 8px 0; background: #1a222d; color: white;
+      border: 1px solid #3d4b5d; border-radius: 6px; text-align: center; font-size: 14px;
     }
-    .input-box input:focus { border-color: var(--naver-green); }
-
-    canvas { background: #fff; cursor: pointer; }
-
-    /* 이동하는 말 (2/3 크기) */
+    canvas { background: transparent; display: block; z-index: 1; position: relative; }
     #playerPiece {
-      position: absolute; width: 30px; height: 30px;
+      position: absolute; width: 28px; height: 28px;
       background-image: url('https://cdn-icons-png.flaticon.com/128/802/802340.png');
       background-size: contain; background-repeat: no-repeat;
-      display: none; z-index: 10; pointer-events: none;
-      transform: translate(-50%, -100%);
+      display: none; z-index: 10; pointer-events: none; transform: translate(-50%, -100%);
     }
 
-    /* 하단 버튼 */
-    .action-btns { margin-top: 30px; }
-    .main-action {
-      width: 200px; height: 55px; background: var(--naver-green); color: #fff;
-      border: none; border-radius: 4px; font-size: 18px; font-weight: bold; cursor: pointer;
+    /* 3. 주사위 게임 (중앙 배치 및 점 형태) */
+    .dice-container {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 70vh;
     }
-    .main-action:active { background: #02a34a; }
+    .dice-row { display: flex; gap: 40px; margin-bottom: 40px; }
+    .dice {
+      width: 120px; height: 120px; background: white; border-radius: 20px;
+      position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      background-size: cover; background-position: center;
+    }
+    /* 주사위 점(Dot) 스타일 */
+    .dot {
+      width: 22px; height: 22px; background: #333; border-radius: 50%;
+      position: absolute; transform: translate(-50%, -50%);
+    }
+    .roll-btn { width: 220px; height: 65px; background-image: url(''); font-size: 20px; }
 
+    .rolling { animation: shake 0.1s infinite; }
+    @keyframes shake { 0% {transform:rotate(0deg)} 50% {transform:rotate(5deg)} 100% {transform:rotate(-5deg)} }
   </style>
 </head>
 <body>
 
-<div class="game-container">
-  <div class="preset-btns">
-    <button class="img-btn" onclick="applyPreset('😈 835 😈', 5)">😈 835 😈</button>
-    <button class="img-btn" onclick="applyPreset('👼 1435 👼', 5)">👼 1435 👼</button>
-    <button class="img-btn" onclick="applyPreset('🍑 3535 🍑', 4)">🍑 3535 🍑</button>
-    <button class="img-btn" onclick="applyPreset('❤️ 18335 ❤️', 3)">❤️ 18335 ❤️</button>
+  <div id="mainPage">
+    <h1>GAME CENTER</h1>
+    <div class="main-selector">
+      <div class="menu-card" onclick="showGame('ladder')"><i>🪜</i><h2>사다리 타기</h2></div>
+      <div class="menu-card" onclick="showGame('dice')"><i>🎲</i><h2>주사위 굴리기</h2></div>
+    </div>
   </div>
 
-  <div class="ladder-board">
-    <div id="topRow" class="input-row"></div>
-
-    <div style="position: relative;">
-      <div id="playerPiece"></div>
-      <canvas id="ladderCanvas" width="700" height="450"></canvas>
+  <div id="gamePage">
+    <button class="back-btn img-btn" onclick="goHome()">BACK</button>
+    
+    <div id="ladderGame" style="display:none;">
+      <div class="preset-btns">
+        <button class="img-btn btn-835" onclick="applyPreset('835', 5)">😈 835 😈</button>
+        <button class="img-btn btn-1435" onclick="applyPreset('1435', 5)">👼 1435 👼</button>
+        <button class="img-btn btn-3535" onclick="applyPreset('3535', 4)">🍑 3535 🍑</button>
+        <button class="img-btn btn-18335" onclick="applyPreset('18335', 3)">❤️ 18335 ❤️</button>
+      </div>
+      <div class="ladder-board">
+        <div id="topInputs" class="label-grid"></div>
+        <div style="position: relative;">
+          <div id="playerPiece"></div>
+          <canvas id="ladderCanvas" width="800" height="450"></canvas>
+        </div>
+        <div id="bottomInputs" class="label-grid"></div>
+      </div>
+      <br><button class="img-btn" onclick="generateLadder()" style="width:200px; height:60px; background-image:url(''); margin-top:20px;">사다리 생성</button>
     </div>
 
-    <div id="bottomRow" class="input-row" style="margin-top: 10px;"></div>
+    <div id="diceGame" class="dice-container" style="display:none;">
+      <div class="dice-row">
+        <div id="dice1" class="dice"></div>
+        <div id="dice2" class="dice"></div>
+      </div>
+      <button class="img-btn roll-btn" onclick="rollDices()">주사위 굴리기</button>
+    </div>
   </div>
-
-  <div class="action-btns">
-    <button class="main-action img-btn" onclick="generateLadder()">사다리 시작</button>
-  </div>
-</div>
 
 <script>
   const canvas = document.getElementById('ladderCanvas');
@@ -98,116 +137,123 @@
   const piece = document.getElementById('playerPiece');
   let state = { n: 5, h: 12, links: [], isMoving: false };
 
-  // 1. 선 간격 계산 (네이버처럼 항목 중앙에 맞춤)
-  function getX(idx) {
-    const gap = canvas.width / state.n;
-    return (gap * idx) + (gap / 2);
+  // 화면 전환
+  function showGame(type) {
+    document.getElementById('mainPage').style.display = 'none';
+    document.getElementById('gamePage').style.display = 'block';
+    document.getElementById('ladderGame').style.display = type === 'ladder' ? 'block' : 'none';
+    document.getElementById('diceGame').style.display = type === 'dice' ? 'block' : 'none';
+    if(type === 'ladder') applyPreset('835', 5);
+    if(type === 'dice') drawDice(1, 'dice1'); drawDice(1, 'dice2');
   }
 
-  // 2. 프리셋 적용 (네이버 스타일 입력 칸 생성)
+  function goHome() {
+    document.getElementById('mainPage').style.display = 'flex';
+    document.getElementById('gamePage').style.display = 'none';
+  }
+
+  // --- 사다리 로직 ---
+  function getX(idx) { return (canvas.width / state.n) * idx + (canvas.width / state.n / 2); }
+
   function applyPreset(name, count) {
     state.n = count;
-    const topRow = document.getElementById('topRow');
-    const bottomRow = document.getElementById('bottomRow');
-    
-    topRow.innerHTML = ''; bottomRow.innerHTML = '';
+    const topRow = document.getElementById('topInputs'), botRow = document.getElementById('bottomInputs');
+    topRow.innerHTML = ''; botRow.innerHTML = '';
     for(let i=0; i<count; i++) {
-      topRow.innerHTML += `<div class="input-box"><input type="text" value="${i+1}" id="t${i}" onclick="startLadder(${i})"></div>`;
-      bottomRow.innerHTML += `<div class="input-box"><input type="text" value="꽝" id="b${i}"></div>`;
+      topRow.innerHTML += `<div class="input-box"><input type="text" value="${i+1}" onclick="startLadder(${i})"></div>`;
+      botRow.innerHTML += `<div class="input-box"><input type="text" value="?"></div>`;
     }
-    
-    generateLadder(false); // 선 미리 그리기
+    generateLadder();
   }
 
-  // 3. 사다리 생성 로직
-  function generateLadder(animate = true) {
-    if(state.isMoving) return;
-    
+  function generateLadder() {
     state.links = Array.from({length: state.h}, () => []);
     for(let y=0; y<state.h; y++) {
-      for(let x=0; x<state.n-1; x++) {
-        if(Math.random() < 0.5) {
-          state.links[y].push(x);
-          x++; // 가로선 겹침 방지
-        }
-      }
+      for(let x=0; x<state.n-1; x++) if(Math.random() < 0.5) { state.links[y].push(x); x++; }
     }
-    draw();
+    drawLadder();
   }
 
-  // 4. 화면 그리기
-  function draw() {
+  function drawLadder() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const h = canvas.height;
-    const dy = h / (state.h + 1);
-
-    // 세로선 (회색)
-    ctx.strokeStyle = '#ddd'; ctx.lineWidth = 2;
+    ctx.strokeStyle = '#3d4b5d'; ctx.lineWidth = 2;
     for(let i=0; i<state.n; i++) {
-      ctx.beginPath(); ctx.moveTo(getX(i), 0); ctx.lineTo(getX(i), h); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(getX(i), 0); ctx.lineTo(getX(i), canvas.height); ctx.stroke();
     }
-
-    // 가로선 (회색)
+    ctx.strokeStyle = varColor('--accent'); ctx.lineWidth = 4;
+    const dy = canvas.height / (state.h + 1);
     state.links.forEach((row, y) => {
-      const yy = (y + 1) * dy;
       row.forEach(x => {
-        ctx.beginPath(); ctx.moveTo(getX(x), yy); ctx.lineTo(getX(x+1), yy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(getX(x), (y+1)*dy); ctx.lineTo(getX(x+1), (y+1)*dy); ctx.stroke();
       });
     });
   }
 
-  // 5. 사다리 타기 애니메이션
+  function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name); }
+
   async function startLadder(idx) {
-    if(state.isMoving || state.links.length === 0) return;
-    state.isMoving = true;
-    
+    if(state.isMoving) return; state.isMoving = true;
     const dy = canvas.height / (state.h + 1);
-    let curCol = idx;
-    let curX = getX(curCol), curY = 0;
-
+    let curCol = idx, curX = getX(curCol), curY = 0;
     piece.style.display = 'block';
-    updatePiece(curX, curY);
-
-    // 경로 추적 및 이동
     for(let y=0; y<state.h; y++) {
-      const nextY = (y + 1) * dy;
-      await movePiece(curX, nextY); curY = nextY;
-
-      let nextX = curX;
-      if(state.links[y].includes(curCol)) { curCol++; nextX = getX(curCol); }
-      else if(state.links[y].includes(curCol-1)) { curCol--; nextX = getX(curCol); }
-      
-      if(nextX !== curX) { await movePiece(nextX, curY); curX = nextX; }
+      await animate(curX, (y+1)*dy); curY = (y+1)*dy;
+      let nx = curX;
+      if(state.links[y].includes(curCol)) { curCol++; nx = getX(curCol); }
+      else if(state.links[y].includes(curCol-1)) { curCol--; nx = getX(curCol); }
+      if(nx !== curX) { await animate(nx, curY); curX = nx; }
     }
-    
-    await movePiece(curX, canvas.height);
-    
-    // 결과 강조
-    document.getElementById(`b${curCol}`).style.borderColor = 'var(--naver-green)';
-    document.getElementById(`b${curCol}`).style.background = '#eafff2';
-    
-    state.isMoving = false;
+    await animate(curX, canvas.height); state.isMoving = false;
   }
 
-  function updatePiece(x, y) {
-    piece.style.left = x + 'px';
-    piece.style.top = y + 'px';
-  }
-
-  function movePiece(tx, ty) {
+  function animate(tx, ty) {
     return new Promise(res => {
-      const sx = parseFloat(piece.style.left), sy = parseFloat(piece.style.top);
+      const sx = parseFloat(piece.style.left || 0), sy = parseFloat(piece.style.top || 0);
       const start = performance.now();
       function step(now) {
-        const p = Math.min((now - start) / 120, 1); // 네이버스러운 속도
-        updatePiece(sx + (tx-sx)*p, sy + (ty-sy)*p);
+        const p = Math.min((now - start) / 120, 1);
+        piece.style.left = sx + (tx-sx)*p + 'px'; piece.style.top = sy + (ty-sy)*p + 'px';
         if(p < 1) requestAnimationFrame(step); else res();
       }
       requestAnimationFrame(step);
     });
   }
 
-  window.onload = () => applyPreset('835', 5);
+  // --- 주사위 로직 (점 형태 + 이미지 대응) ---
+  const diceImgPaths = { 1:'', 2:'', 3:'', 4:'', 5:'', 6:'' }; // 이미지 주소 넣으면 점 대신 이미지 출력
+
+  function drawDice(num, id) {
+    const el = document.getElementById(id);
+    el.innerHTML = '';
+    if(diceImgPaths[num]) {
+      el.style.backgroundImage = `url('${diceImgPaths[num]}')`;
+      return;
+    }
+    el.style.backgroundImage = 'none';
+    const positions = {
+      1: [[50,50]],
+      2: [[25,25], [75,75]],
+      3: [[25,25], [50,50], [75,75]],
+      4: [[25,25], [25,75], [75,25], [75,75]],
+      5: [[25,25], [25,75], [50,50], [75,25], [75,75]],
+      6: [[25,25], [25,50], [25,75], [75,25], [75,50], [75,75]]
+    };
+    positions[num].forEach(pos => {
+      const dot = document.createElement('div');
+      dot.className = 'dot'; dot.style.left = pos[0]+'%'; dot.style.top = pos[1]+'%';
+      el.appendChild(dot);
+    });
+  }
+
+  function rollDices() {
+    const d1 = document.getElementById('dice1'), d2 = document.getElementById('dice2');
+    d1.classList.add('rolling'); d2.classList.add('rolling');
+    setTimeout(() => {
+      const v1 = Math.floor(Math.random()*6)+1, v2 = Math.floor(Math.random()*6)+1;
+      drawDice(v1, 'dice1'); drawDice(v2, 'dice2');
+      d1.classList.remove('rolling'); d2.classList.remove('rolling');
+    }, 600);
+  }
 </script>
 </body>
 </html>
