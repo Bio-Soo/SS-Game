@@ -217,7 +217,7 @@
       const sx = parseFloat(piece.style.left || 0), sy = parseFloat(piece.style.top || 0);
       const start = performance.now();
       function step(now) {
-        const p = Math.min((now - start) / 120, 1);
+        const p = Math.min((now - start) / 160, 1);
         piece.style.left = sx + (tx-sx)*p + 'px'; piece.style.top = sy + (ty-sy)*p + 'px';
         if(p < 1) requestAnimationFrame(step); else res();
       }
@@ -252,3 +252,4 @@
 </script>
 </body>
 </html>
+
