@@ -3,213 +3,205 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>프리미엄 게임 센터</title>
+  <title>네이버 스타일 사다리 게임</title>
   <style>
     :root { 
-      --bg:#070a0f; --card:rgba(17, 24, 38, 0.95); --text:#e6eef9; --accent:#6ee7ff; --line:#2b3b55;
+      --naver-green: #03c75a;
+      --bg-gray: #f4f6f8;
+      --line-color: #ced4da;
+      --text-dark: #333;
     }
     body { 
-      margin:0; font-family: sans-serif; background: var(--bg); color: var(--text);
+      margin:0; font-family: 'Malgun Gothic', sans-serif; background: var(--bg-gray); color: var(--text-dark);
       display: flex; flex-direction: column; align-items: center;
     }
 
-    /* 게임 컨테이너 */
-    #gamePage { width: 100%; max-width: 1000px; padding: 20px; text-align: center; }
-    
-    .preset-btns { display: flex; gap: 10px; justify-content: center; margin: 30px 0; }
+    /* 메인 컨테이너 */
+    .game-container { 
+      width: 100%; max-width: 800px; background: #fff; padding: 40px; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-top: 50px; border-radius: 8px;
+    }
+
+    /* 프리셋 버튼 (네이버 상단 탭 스타일) */
+    .preset-btns { display: flex; gap: 8px; justify-content: center; margin-bottom: 30px; }
     .img-btn {
-      background-color: #1e293b; border: 1px solid var(--accent); color: white;
-      padding: 12px 20px; border-radius: 50px; cursor: pointer; font-weight: bold;
+      min-width: 130px; height: 45px; border: 1px solid #ddd; background: #fff;
+      cursor: pointer; border-radius: 22px; font-weight: bold; font-size: 14px;
+      background-size: cover; background-position: center; transition: all 0.2s;
     }
+    .img-btn:hover { border-color: var(--naver-green); color: var(--naver-green); }
 
-    /* 사다리 프레임: 입력창과 캔버스의 너비를 800px로 고정 */
-    .ladder-frame { 
-      position: relative; 
-      width: 800px; /* 고정 너비 */
-      margin: 40px auto; 
-    }
-    
-    /* 항목칸(Input) 정렬 핵심 */
-    .label-grid { 
-      display: flex; 
-      width: 100%; 
-      justify-content: space-between; 
-      margin: 10px 0;
-    }
-    .input-wrap {
-      flex: 1; /* 동일한 공간 할당 */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .label-grid input { 
-      width: 60px; background: #0c1422; color: white; border: 1px solid var(--line);
-      padding: 8px 0; border-radius: 8px; text-align: center;
-    }
+    /* 사다리 판 레이아웃 */
+    .ladder-board { position: relative; display: flex; flex-direction: column; align-items: center; }
 
-    canvas { background: transparent; display: block; }
+    /* 입력창 그리드 - 캔버스 너비와 완벽 일치 */
+    .input-row { 
+      display: flex; width: 100%; justify-content: space-between; margin-bottom: 10px;
+    }
+    .input-box { flex: 1; display: flex; justify-content: center; }
+    .input-box input {
+      width: 80%; padding: 10px 0; border: 1px solid #e5e5e5; border-radius: 4px;
+      text-align: center; font-size: 14px; outline: none; transition: border 0.2s;
+    }
+    .input-box input:focus { border-color: var(--naver-green); }
 
-    /* 말 설정: z-index를 높이고 translate를 통해 선 정중앙에 배치 */
+    canvas { background: #fff; cursor: pointer; }
+
+    /* 이동하는 말 (2/3 크기) */
     #playerPiece {
       position: absolute; width: 30px; height: 30px;
       background-image: url('https://cdn-icons-png.flaticon.com/128/802/802340.png');
       background-size: contain; background-repeat: no-repeat;
-      display: none; z-index: 100; pointer-events: none;
-      /* 캐릭터 이미지가 선 위에 정확히 걸치도록 -50% 조정 */
-      transform: translate(-50%, -50%); 
+      display: none; z-index: 10; pointer-events: none;
+      transform: translate(-50%, -100%);
     }
 
-    .gen-btn {
-      width: 250px; height: 60px; font-size: 20px; border-radius: 10px;
-      background: var(--accent); color: #000; border: none; font-weight: bold; cursor: pointer;
+    /* 하단 버튼 */
+    .action-btns { margin-top: 30px; }
+    .main-action {
+      width: 200px; height: 55px; background: var(--naver-green); color: #fff;
+      border: none; border-radius: 4px; font-size: 18px; font-weight: bold; cursor: pointer;
     }
+    .main-action:active { background: #02a34a; }
+
   </style>
 </head>
 <body>
 
-  <div id="gamePage">
-    <div id="ladderGame">
-      <div class="preset-btns">
-        <button class="img-btn" onclick="applyPreset('835', 5)">😈 835 😈</button>
-        <button class="img-btn" onclick="applyPreset('1435', 5)">👼 1435 👼</button>
-        <button class="img-btn" onclick="applyPreset('3535', 4)">🍑 3535 🍑</button>
-        <button class="img-btn" onclick="applyPreset('18335', 3)">❤️ 18335 ❤️</button>
-      </div>
-
-      <div class="ladder-frame">
-        <div id="topInputs" class="label-grid"></div>
-        
-        <div style="position: relative; width: 800px; height: 500px;">
-          <div id="playerPiece"></div>
-          <canvas id="ladderCanvas" width="800" height="500"></canvas>
-        </div>
-
-        <div id="bottomInputs" class="label-grid"></div>
-      </div>
-      
-      <button class="gen-btn" onclick="generateLadder()">사다리 생성</button>
-    </div>
+<div class="game-container">
+  <div class="preset-btns">
+    <button class="img-btn" onclick="applyPreset('😈 835 😈', 5)">😈 835 😈</button>
+    <button class="img-btn" onclick="applyPreset('👼 1435 👼', 5)">👼 1435 👼</button>
+    <button class="img-btn" onclick="applyPreset('🍑 3535 🍑', 4)">🍑 3535 🍑</button>
+    <button class="img-btn" onclick="applyPreset('❤️ 18335 ❤️', 3)">❤️ 18335 ❤️</button>
   </div>
+
+  <div class="ladder-board">
+    <div id="topRow" class="input-row"></div>
+
+    <div style="position: relative;">
+      <div id="playerPiece"></div>
+      <canvas id="ladderCanvas" width="700" height="450"></canvas>
+    </div>
+
+    <div id="bottomRow" class="input-row" style="margin-top: 10px;"></div>
+  </div>
+
+  <div class="action-btns">
+    <button class="main-action img-btn" onclick="generateLadder()">사다리 시작</button>
+  </div>
+</div>
 
 <script>
   const canvas = document.getElementById('ladderCanvas');
   const ctx = canvas.getContext('2d');
   const piece = document.getElementById('playerPiece');
-  let state = { n: 5, h: 15, links: [], isMoving: false };
+  let state = { n: 5, h: 12, links: [], isMoving: false };
 
-  // 핵심: 입력창의 중심과 사다리 선의 좌표를 완벽하게 일치시킴
-  function getXPos(idx) {
-    const totalWidth = canvas.width;
-    const colWidth = totalWidth / state.n;
-    // (현재 칸의 위치) + (칸 너비의 절반)
-    return (idx * colWidth) + (colWidth / 2);
+  // 1. 선 간격 계산 (네이버처럼 항목 중앙에 맞춤)
+  function getX(idx) {
+    const gap = canvas.width / state.n;
+    return (gap * idx) + (gap / 2);
   }
 
+  // 2. 프리셋 적용 (네이버 스타일 입력 칸 생성)
   function applyPreset(name, count) {
     state.n = count;
-    const topWrap = document.getElementById('topInputs');
-    const botWrap = document.getElementById('bottomInputs');
+    const topRow = document.getElementById('topRow');
+    const bottomRow = document.getElementById('bottomRow');
     
-    topWrap.innerHTML = ''; botWrap.innerHTML = '';
+    topRow.innerHTML = ''; bottomRow.innerHTML = '';
     for(let i=0; i<count; i++) {
-      topWrap.innerHTML += `<div class="input-wrap"><input type="text" value="${i+1}" id="t${i}" onclick="startFrom(${i})"></div>`;
-      botWrap.innerHTML += `<div class="input-wrap"><input type="text" value="?" id="b${i}"></div>`;
+      topRow.innerHTML += `<div class="input-box"><input type="text" value="${i+1}" id="t${i}" onclick="startLadder(${i})"></div>`;
+      bottomRow.innerHTML += `<div class="input-box"><input type="text" value="꽝" id="b${i}"></div>`;
     }
-    ctx.clearRect(0,0,canvas.width, canvas.height);
-    state.links = [];
-    drawStaticLines();
+    
+    generateLadder(false); // 선 미리 그리기
   }
 
-  function drawStaticLines() {
-    ctx.strokeStyle = "#2b3b55"; ctx.lineWidth = 3;
-    for(let i=0; i<state.n; i++) {
-      const x = getXPos(i);
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-    }
-  }
-
-  function generateLadder() {
+  // 3. 사다리 생성 로직
+  function generateLadder(animate = true) {
     if(state.isMoving) return;
+    
     state.links = Array.from({length: state.h}, () => []);
     for(let y=0; y<state.h; y++) {
       for(let x=0; x<state.n-1; x++) {
-        if(Math.random() < 0.5) { state.links[y].push(x); x++; }
+        if(Math.random() < 0.5) {
+          state.links[y].push(x);
+          x++; // 가로선 겹침 방지
+        }
       }
     }
-    renderAll();
+    draw();
   }
 
-  function renderAll() {
-    ctx.clearRect(0,0,canvas.width, canvas.height);
-    drawStaticLines();
-    const dy = canvas.height / (state.h + 1);
-    ctx.strokeStyle = "#6ee7ff"; ctx.lineWidth = 4;
+  // 4. 화면 그리기
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const h = canvas.height;
+    const dy = h / (state.h + 1);
+
+    // 세로선 (회색)
+    ctx.strokeStyle = '#ddd'; ctx.lineWidth = 2;
+    for(let i=0; i<state.n; i++) {
+      ctx.beginPath(); ctx.moveTo(getX(i), 0); ctx.lineTo(getX(i), h); ctx.stroke();
+    }
+
+    // 가로선 (회색)
     state.links.forEach((row, y) => {
       const yy = (y + 1) * dy;
       row.forEach(x => {
-        ctx.beginPath(); 
-        ctx.moveTo(getXPos(x), yy); 
-        ctx.lineTo(getXPos(x+1), yy); 
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(getX(x), yy); ctx.lineTo(getX(x+1), yy); ctx.stroke();
       });
     });
   }
 
-  async function startFrom(colIdx) {
-    if(state.links.length === 0 || state.isMoving) return;
+  // 5. 사다리 타기 애니메이션
+  async function startLadder(idx) {
+    if(state.isMoving || state.links.length === 0) return;
     state.isMoving = true;
     
     const dy = canvas.height / (state.h + 1);
-    let curCol = colIdx;
-    let curX = getXPos(curCol);
-    let curY = 0;
+    let curCol = idx;
+    let curX = getX(curCol), curY = 0;
 
     piece.style.display = 'block';
-    updatePiecePos(curX, curY);
+    updatePiece(curX, curY);
 
+    // 경로 추적 및 이동
     for(let y=0; y<state.h; y++) {
-      // 1. 수직 하강
-      const targetY = (y + 1) * dy;
-      await animatePiece(curX, targetY);
-      curY = targetY;
+      const nextY = (y + 1) * dy;
+      await movePiece(curX, nextY); curY = nextY;
 
-      // 2. 수평 이동 체크
-      let nextCol = curCol;
-      if(state.links[y].includes(curCol)) {
-        nextCol = curCol + 1;
-      } else if(state.links[y].includes(curCol - 1)) {
-        nextCol = curCol - 1;
-      }
-
-      if(nextCol !== curCol) {
-        const nextX = getXPos(nextCol);
-        await animatePiece(nextX, curY);
-        curX = nextX;
-        curCol = nextCol;
-      }
+      let nextX = curX;
+      if(state.links[y].includes(curCol)) { curCol++; nextX = getX(curCol); }
+      else if(state.links[y].includes(curCol-1)) { curCol--; nextX = getX(curCol); }
+      
+      if(nextX !== curX) { await movePiece(nextX, curY); curX = nextX; }
     }
-
-    // 3. 최종 바닥까지
-    await animatePiece(curX, canvas.height);
+    
+    await movePiece(curX, canvas.height);
+    
+    // 결과 강조
+    document.getElementById(`b${curCol}`).style.borderColor = 'var(--naver-green)';
+    document.getElementById(`b${curCol}`).style.background = '#eafff2';
+    
     state.isMoving = false;
   }
 
-  function updatePiecePos(x, y) {
-    // 캔버스 내에서의 상대 좌표로 말의 위치를 고정
+  function updatePiece(x, y) {
     piece.style.left = x + 'px';
     piece.style.top = y + 'px';
   }
 
-  function animatePiece(tx, ty) {
-    return new Promise(resolve => {
+  function movePiece(tx, ty) {
+    return new Promise(res => {
       const sx = parseFloat(piece.style.left), sy = parseFloat(piece.style.top);
-      const startTime = performance.now();
-      const duration = 150; 
-
+      const start = performance.now();
       function step(now) {
-        const p = Math.min((now - startTime) / duration, 1);
-        updatePiecePos(sx + (tx - sx) * p, sy + (ty - sy) * p);
-        if(p < 1) requestAnimationFrame(step); else resolve();
+        const p = Math.min((now - start) / 120, 1); // 네이버스러운 속도
+        updatePiece(sx + (tx-sx)*p, sy + (ty-sy)*p);
+        if(p < 1) requestAnimationFrame(step); else res();
       }
       requestAnimationFrame(step);
     });
