@@ -2,68 +2,488 @@
 <html lang="ko">
 <head>
     <meta charset="utf-8" />
-    <title>최종 게임 센터</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게임 센터 Pro</title>
     <style>
-        :root { --accent: #6ee7ff; --bg: #0b0f14; --line: #3d4b5d; }
-        body { margin:0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { 
+            --accent: #6ee7ff; 
+            --accent-glow: #00d4ff;
+            --bg: #0b0f14; 
+            --card-bg: #1a222d;
+            --line: #3d4b5d; 
+            --success: #2ecc71;
+            --danger: #e74c3c;
+        }
         
+        body { 
+            background-color: #87CEEB;
+            background-image: url('https://i.imgur.com/MtSu3Hk.jpeg');
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: #fff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 15, 20, 0.2);
+            z-index: -1;
+            pointer-events: none;
+        }
+
         /* 메인 페이지 */
-        #page-main { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        .menu-btn { width: 250px; height: 150px; margin: 20px; border: 2px solid var(--accent); border-radius: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; background: rgba(255,255,255,0.1); }
+        #page-main { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-end; 
+            min-height: 100vh; 
+            padding: 20px 20px 100px;
+        }
+        
+        .main-title {
+            display: none;
+        }
+
+        .main-subtitle {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 10px rgba(110, 231, 255, 0.5)); }
+            to { filter: drop-shadow(0 0 20px rgba(110, 231, 255, 0.8)); }
+        }
+
+        .menu-container {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .menu-btn { 
+            width: 280px; 
+            height: 180px; 
+            border: 3px solid var(--accent); 
+            border-radius: 20px; 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            font-size: 28px; 
+            font-weight: bold;
+            background: linear-gradient(135deg, rgba(26, 34, 45, 0.9), rgba(61, 75, 93, 0.3));
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, transparent, var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-10px) scale(1.05);
+            border-color: var(--accent-glow);
+            box-shadow: 0 10px 40px rgba(110, 231, 255, 0.4);
+        }
+
+        .menu-btn:hover::before {
+            opacity: 0.1;
+        }
+
+        .menu-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
 
         /* 게임 공통 */
-        .game-screen { display: none; height: 100vh; width: 100vw; position: relative; flex-direction: column; align-items: center; justify-content: center; }
-        .nav-bar { position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 100; }
-        .btn { padding: 10px 20px; cursor: pointer; background: #222; border: 1px solid #555; color: #fff; border-radius: 5px; }
-        .btn:hover { border-color: var(--accent); }
+        .game-screen { 
+            display: none; 
+            min-height: 100vh; 
+            width: 100vw; 
+            position: relative; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 100px 20px 40px;
+        }
+        
+        .nav-bar { 
+            position: fixed; 
+            top: 20px; 
+            left: 20px; 
+            right: 20px;
+            display: flex; 
+            gap: 15px; 
+            z-index: 100; 
+            flex-wrap: wrap;
+        }
+        
+        .btn { 
+            padding: 12px 24px; 
+            cursor: pointer; 
+            background: var(--card-bg); 
+            border: 2px solid var(--line); 
+            color: #fff; 
+            border-radius: 10px; 
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover { 
+            border-color: var(--accent); 
+            background: rgba(110, 231, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(110, 231, 255, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
 
         /* 사다리 게임 */
-        .ladder-area { position: relative; margin-top: 20px; }
-        .inputs { display: flex; width: 600px; justify-content: space-around; margin-bottom: 10px; }
-        .inputs input { width: 60px; text-align: center; padding: 5px; background: #1a222d; color: #fff; border: 1px solid var(--line); }
-        #player { position: absolute; width: 20px; height: 20px; background: #ff4757; border-radius: 50%; display: none; transform: translate(-50%, -100%); z-index: 50; }
+        .ladder-container {
+            background: rgba(26, 34, 45, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            max-width: 700px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
 
-        /* 주사위 게임 (중앙 정렬) */
-        #dice-game { display: none; text-align: center; }
-        .dice-wrap { display: flex; gap: 50px; margin-bottom: 40px; }
-        .dice { width: 120px; height: 120px; background: #fff; border-radius: 20px; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .dot { position: absolute; width: 20px; height: 20px; background: #333; border-radius: 50%; transform: translate(-50%, -50%); }
-        .roll-btn { padding: 20px 50px; font-size: 20px; background: var(--accent); color: #000; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; }
+        .ladder-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .ladder-count-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .count-btn {
+            padding: 12px 30px;
+            background: rgba(61, 75, 93, 0.5);
+            border: 2px solid var(--line);
+            color: #fff;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .count-btn:hover {
+            border-color: var(--accent);
+            background: rgba(110, 231, 255, 0.2);
+        }
+
+        .count-btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        .ladder-area { 
+            position: relative; 
+            margin: 20px auto;
+            background: rgba(11, 15, 20, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .inputs { 
+            display: flex; 
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            justify-content: space-around; 
+            margin-bottom: 15px; 
+        }
+        
+        .inputs input { 
+            width: 70px; 
+            text-align: center; 
+            padding: 10px; 
+            background: var(--bg); 
+            color: #fff; 
+            border: 2px solid var(--line); 
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .inputs input:hover {
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+
+        .inputs input:focus {
+            outline: none;
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 15px rgba(110, 231, 255, 0.3);
+        }
+
+        #player { 
+            position: absolute; 
+            width: 24px; 
+            height: 24px; 
+            background: radial-gradient(circle, #ff4757, #c23645);
+            border-radius: 50%; 
+            display: none; 
+            transform: translate(-50%, -50%); /* 중앙 정렬로 변경 */
+            z-index: 50; 
+            box-shadow: 0 0 20px rgba(255, 71, 87, 0.8);
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 15px 30px;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            font-size: 20px;
+            display: inline-block;
+        }
+
+        .btn-text {
+            display: inline-block;
+        }
+
+        .control-btn:hover {
+            background: var(--accent-glow);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(110, 231, 255, 0.5);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 주사위 게임 */
+        .dice-container {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .dice-title {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            color: var(--accent);
+        }
+
+        .dice-wrap { 
+            display: flex; 
+            gap: 60px; 
+            margin-bottom: 50px; 
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .dice { 
+            width: 140px; 
+            height: 140px; 
+            background: linear-gradient(135deg, #ffffff, #f0f0f0);
+            border-radius: 20px; 
+            position: relative; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            transition: transform 0.6s ease;
+        }
+
+        .dice.rolling {
+            animation: roll 0.6s ease-out;
+        }
+
+        @keyframes roll {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(360deg) scale(1.1); }
+            100% { transform: rotate(720deg) scale(1); }
+        }
+        
+        .dot { 
+            position: absolute; 
+            width: 24px; 
+            height: 24px; 
+            background: #333; 
+            border-radius: 50%; 
+            transform: translate(-50%, -50%); 
+        }
+        
+        .roll-btn { 
+            padding: 20px 60px; 
+            font-size: 22px; 
+            background: linear-gradient(135deg, var(--accent), var(--accent-glow));
+            color: var(--bg); 
+            font-weight: bold; 
+            border: none; 
+            border-radius: 15px; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(110, 231, 255, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .roll-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(110, 231, 255, 0.6);
+        }
+
+        .roll-btn:active {
+            transform: translateY(-2px);
+        }
+
+        .dice-result {
+            margin-top: 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+            min-height: 40px;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .main-title { font-size: 2.5rem; }
+            .menu-btn { width: 240px; height: 160px; font-size: 24px; }
+            .menu-icon { font-size: 36px; }
+            .ladder-container { padding: 20px; }
+            .dice-wrap { gap: 30px; }
+            .dice { width: 120px; height: 120px; }
+        }
     </style>
 </head>
 <body>
 
     <div id="page-main">
-        <h1>GAME CENTER</h1>
-        <div style="display: flex;">
-            <div class="menu-btn" onclick="goGame('ladder')">사다리 타기</div>
-            <div class="menu-btn" onclick="goGame('dice')">주사위 게임</div>
+        <h2 class="main-subtitle">♥ 모든 사다리 하위픽 가능 ♥</h2>
+        <div class="menu-container">
+            <div class="menu-btn" onclick="goGame('ladder')">
+                <div class="menu-icon">🪜</div>
+                <div>사다리 타기</div>
+            </div>
+            <div class="menu-btn" onclick="goGame('dice')">
+                <div class="menu-icon">🎲</div>
+                <div>주사위 게임</div>
+            </div>
         </div>
     </div>
 
     <div id="page-game" class="game-screen">
         <div class="nav-bar">
-            <button class="btn" onclick="goHome()">BACK</button>
-            <button id="to-dice" class="btn" onclick="goGame('dice')">사다리 업그레이드 주사위 게임</button>
-            <button id="to-ladder" class="btn" onclick="goGame('ladder')">사다리타기로 이동</button>
+            <button class="btn" onclick="goHome()">
+                <span class="btn-icon">🏠</span>
+                <span class="btn-text">홈으로</span>
+            </button>
+            <button id="to-dice" class="btn" onclick="goGame('dice')">
+                <span class="btn-icon">🎲</span>
+                <span class="btn-text">주사위 게임</span>
+            </button>
+            <button id="to-ladder" class="btn" onclick="goGame('ladder')">
+                <span class="btn-icon">🪜</span>
+                <span class="btn-text">사다리 타기</span>
+            </button>
         </div>
 
-        <div id="ladder-game" style="display:none; text-align: center;">
-            <div class="inputs" id="top-in"></div>
-            <div class="ladder-area">
-                <div id="player"></div>
-                <canvas id="canvas" width="600" height="400"></canvas>
+        <div id="ladder-game" style="display:none;">
+            <div class="ladder-container">
+                <h2 class="ladder-title">사다리 타기</h2>
+                <div class="ladder-count-selector">
+                    <button class="count-btn" onclick="setLadderCount(3)">3개</button>
+                    <button class="count-btn" onclick="setLadderCount(4)">4개</button>
+                    <button class="count-btn active" onclick="setLadderCount(5)">5개</button>
+                </div>
+                <div class="inputs" id="top-in"></div>
+                <div class="ladder-area">
+                    <div id="player"></div>
+                    <canvas id="canvas" width="600" height="400"></canvas>
+                </div>
+                <div class="inputs" id="bot-in"></div>
+                <div class="control-panel">
+                    <button class="control-btn" onclick="initLadder()">
+                        <span class="btn-icon">🎨</span>
+                        <span class="btn-text">사다리 생성</span>
+                    </button>
+                    <button class="control-btn" onclick="resetLadder()">
+                        <span class="btn-icon">🔄</span>
+                        <span class="btn-text">초기화</span>
+                    </button>
+                </div>
             </div>
-            <div class="inputs" id="bot-in"></div>
-            <button class="btn" style="margin-top:20px; width:200px;" onclick="initLadder()">사다리 생성</button>
         </div>
 
         <div id="dice-game">
-            <div class="dice-wrap">
-                <div id="dice1" class="dice"></div>
-                <div id="dice2" class="dice"></div>
+            <div class="dice-container">
+                <h2 class="dice-title">주사위 게임</h2>
+                <div class="dice-wrap">
+                    <div id="dice1" class="dice"></div>
+                    <div id="dice2" class="dice"></div>
+                </div>
+                <button class="roll-btn" onclick="rollDice()">
+                    <span class="btn-icon">🎲</span>
+                    <span class="btn-text">주사위 굴리기</span>
+                </button>
+                <div class="dice-result" id="dice-result"></div>
             </div>
-            <button class="roll-btn" onclick="rollDice()">주사위 굴리기</button>
         </div>
     </div>
 
@@ -72,14 +492,15 @@
     const ctx = canvas.getContext('2d');
     const player = document.getElementById('player');
     
-    // 사다리 설정 (굵기 조절 가능)
-    const L_WIDTH = 4; // 기본 굵기
-    const H_WIDTH = 7; // 하이라이트 굵기
-    const SPEED = 120; // 속도 (작을수록 빠름)
+    const L_WIDTH = 5;
+    const H_WIDTH = 8;
+    const SPEED = 200; // 속도 늦춤
     
     let state = { n: 5, links: [], isGen: false, isMove: false, path: [] };
 
-    function goHome() { location.reload(); }
+    function goHome() { 
+        location.reload(); 
+    }
 
     function goGame(type) {
         document.getElementById('page-main').style.display = 'none';
@@ -89,109 +510,263 @@
         document.getElementById('to-dice').style.display = type === 'ladder' ? 'block' : 'none';
         document.getElementById('to-ladder').style.display = type === 'dice' ? 'block' : 'none';
         
-        if(type === 'ladder') makeInputs(5);
-        if(type === 'dice') drawDice(1, 'dice1'), drawDice(1, 'dice2');
+        if(type === 'ladder') {
+            makeInputs(5);
+        }
+        if(type === 'dice') {
+            drawDice(1, 'dice1');
+            drawDice(1, 'dice2');
+            document.getElementById('dice-result').textContent = '';
+        }
     }
 
     function makeInputs(n) {
-        state.n = n; state.isGen = false; state.links = []; state.path = [];
-        const top = document.getElementById('top-in'), bot = document.getElementById('bot-in');
-        top.innerHTML = ''; bot.innerHTML = '';
-        for(let i=0; i<n; i++) {
-            top.innerHTML += `<input value="${i+1}" onclick="start(${i})">`;
+        state.n = n;
+        state.isGen = false;
+        state.links = [];
+        state.path = [];
+        
+        const top = document.getElementById('top-in');
+        const bot = document.getElementById('bot-in');
+        top.innerHTML = '';
+        bot.innerHTML = '';
+        
+        for(let i = 0; i < n; i++) {
+            top.innerHTML += `<input value="${i + 1}" onclick="start(${i})" readonly>`;
             bot.innerHTML += `<input value="꽝">`;
         }
+        
+        // 활성 버튼 표시 업데이트
+        updateActiveButton(n);
+        draw();
+    }
+
+    function setLadderCount(count) {
+        if(state.isMove) {
+            state.isMove = false; // 이동 중단
+            player.style.display = 'none';
+        }
+        makeInputs(count);
+    }
+
+    function updateActiveButton(n) {
+        document.querySelectorAll('.count-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const buttons = document.querySelectorAll('.count-btn');
+        if(n === 3) buttons[0].classList.add('active');
+        else if(n === 4) buttons[1].classList.add('active');
+        else if(n === 5) buttons[2].classList.add('active');
+    }
+
+    function resetLadder() {
+        state.isGen = false;
+        state.links = [];
+        state.path = [];
+        player.style.display = 'none';
         draw();
     }
 
     function initLadder() {
         state.links = [];
-        for(let y=0; y<10; y++) {
+        // 사다리 가로줄 생성 증가 (더 많은 연결선)
+        for(let y = 0; y < 10; y++) {
             let row = [];
-            for(let x=0; x<state.n-1; x++) {
-                if(Math.random() > 0.6) { row.push(x); x++; }
+            for(let x = 0; x < state.n - 1; x++) {
+                if(Math.random() > 0.35) { // 0.45에서 0.35로 변경 (더 많은 가로줄)
+                    row.push(x);
+                    x++;
+                }
             }
             state.links.push(row);
         }
-        state.isGen = true; state.path = []; draw();
+        state.isGen = true;
+        state.path = [];
+        state.isMove = false; // 추가
+        player.style.display = 'none';
+        draw();
     }
 
-    function getX(i) { return (canvas.width/state.n) * i + (canvas.width/state.n/2); }
+    function getX(i) {
+        return (canvas.width / state.n) * i + (canvas.width / state.n / 2);
+    }
 
     function draw() {
-        ctx.clearRect(0,0,canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.lineCap = 'round';
         
-        // 배경 사다리
-        ctx.strokeStyle = '#3d4b5d'; ctx.lineWidth = L_WIDTH;
-        for(let i=0; i<state.n; i++) {
-            ctx.beginPath(); ctx.moveTo(getX(i), 0); ctx.lineTo(getX(i), canvas.height); ctx.stroke();
+        ctx.strokeStyle = '#3d4b5d';
+        ctx.lineWidth = L_WIDTH;
+        for(let i = 0; i < state.n; i++) {
+            ctx.beginPath();
+            ctx.moveTo(getX(i), 0);
+            ctx.lineTo(getX(i), canvas.height);
+            ctx.stroke();
         }
+        
         if(state.isGen) {
             let dy = canvas.height / 11;
             state.links.forEach((row, y) => {
                 row.forEach(x => {
-                    ctx.beginPath(); ctx.moveTo(getX(x), (y+1)*dy); ctx.lineTo(getX(x+1), (y+1)*dy); ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(getX(x), (y + 1) * dy);
+                    ctx.lineTo(getX(x + 1), (y + 1) * dy);
+                    ctx.stroke();
                 });
             });
         }
 
-        // 하이라이트
         if(state.path.length > 1) {
-            ctx.strokeStyle = '#6ee7ff'; ctx.lineWidth = H_WIDTH;
-            ctx.beginPath(); ctx.moveTo(state.path[0].x, state.path[0].y);
+            ctx.strokeStyle = '#6ee7ff';
+            ctx.lineWidth = H_WIDTH;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#6ee7ff';
+            ctx.beginPath();
+            ctx.moveTo(state.path[0].x, state.path[0].y);
             state.path.forEach(p => ctx.lineTo(p.x, p.y));
             ctx.stroke();
+            ctx.shadowBlur = 0;
         }
     }
 
     async function start(idx) {
-        if(!state.isGen || state.isMove) return;
-        state.isMove = true; state.path = [{x: getX(idx), y:0}];
+        if(!state.isGen) return;
+        
+        // 이미 이동 중이면 중단하고 새로 시작
+        if(state.isMove) {
+            state.isMove = false;
+            await new Promise(resolve => setTimeout(resolve, 50)); // 짧은 대기
+        }
+        
+        state.isMove = true;
+        state.path = [{x: getX(idx), y: 0}];
         player.style.display = 'block';
         
-        let curX = getX(idx), curY = 0, curCol = idx;
+        let curX = getX(idx);
+        let curY = 0;
+        let curCol = idx;
         let dy = canvas.height / 11;
 
-        for(let y=0; y<10; y++) {
-            await move(curX, (y+1)*dy); curY = (y+1)*dy;
+        for(let y = 0; y < 10; y++) {
+            if(!state.isMove) break; // 중단 체크
+            
+            await move(curX, (y + 1) * dy);
+            if(!state.isMove) break; // 중단 체크
+            
+            curY = (y + 1) * dy;
+            
             let nx = curX;
-            if(state.links[y].includes(curCol)) { curCol++; nx = getX(curCol); }
-            else if(state.links[y].includes(curCol-1)) { curCol--; nx = getX(curCol); }
-            if(nx !== curX) { await move(nx, curY); curX = nx; }
+            if(state.links[y].includes(curCol)) {
+                curCol++;
+                nx = getX(curCol);
+            } else if(state.links[y].includes(curCol - 1)) {
+                curCol--;
+                nx = getX(curCol);
+            }
+            
+            if(nx !== curX) {
+                await move(nx, curY);
+                if(!state.isMove) break; // 중단 체크
+                curX = nx;
+            }
         }
-        await move(curX, canvas.height);
+        
+        if(state.isMove) {
+            await move(curX, canvas.height);
+        }
         state.isMove = false;
     }
 
     function move(tx, ty) {
-        return new Promise(res => {
-            let sx = state.path[state.path.length-1].x, sy = state.path[state.path.length-1].y;
+        return new Promise(resolve => {
+            let sx = state.path[state.path.length - 1].x;
+            let sy = state.path[state.path.length - 1].y;
             let startTime = performance.now();
+            
             function step(now) {
-                let p = Math.min((now - startTime)/SPEED, 1);
-                let cx = sx + (tx-sx)*p, cy = sy + (ty-sy)*p;
-                player.style.left = cx + 'px'; player.style.top = cy + 'px';
-                state.path.push({x:cx, y:cy}); draw();
-                if(p < 1) requestAnimationFrame(step); else res();
+                if(!state.isMove) { // 중단 체크
+                    resolve();
+                    return;
+                }
+                
+                let progress = Math.min((now - startTime) / SPEED, 1);
+                let cx = sx + (tx - sx) * progress;
+                let cy = sy + (ty - sy) * progress;
+                
+                player.style.left = cx + 'px';
+                player.style.top = cy + 'px';
+                state.path.push({x: cx, y: cy});
+                draw();
+                
+                if(progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    resolve();
+                }
             }
             requestAnimationFrame(step);
         });
     }
 
-    // 주사위
     function drawDice(n, id) {
-        const el = document.getElementById(id); el.innerHTML = '';
-        const dots = { 1:[[50,50]], 2:[[25,25],[75,75]], 3:[[25,25],[50,50],[75,75]], 4:[[25,25],[25,75],[75,25],[75,75]], 5:[[25,25],[25,75],[50,50],[75,25],[75,75]], 6:[[25,25],[25,50],[25,75],[75,25],[75,50],[75,75]] };
-        dots[n].forEach(p => {
-            let d = document.createElement('div'); d.className = 'dot';
-            d.style.left = p[0]+'%'; d.style.top = p[1]+'%'; el.appendChild(d);
-        });
+        const el = document.getElementById(id);
+        el.innerHTML = '';
+        
+        const dots = {
+            1: [[50, 50]],
+            2: [[25, 25], [75, 75]],
+            3: [[25, 25], [50, 50], [75, 75]],
+            4: [[25, 25], [25, 75], [75, 25], [75, 75]],
+            5: [[25, 25], [25, 75], [50, 50], [75, 25], [75, 75]],
+            6: [[25, 25], [25, 50], [25, 75], [75, 25], [75, 50], [75, 75]]
+        };
+        
+        if(dots[n]) {
+            dots[n].forEach(pos => {
+                let dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.style.left = pos[0] + '%';
+                dot.style.top = pos[1] + '%';
+                el.appendChild(dot);
+            });
+        }
     }
+    
     function rollDice() {
-        let v1 = Math.floor(Math.random()*6)+1, v2 = Math.floor(Math.random()*6)+1;
-        drawDice(v1, 'dice1'); drawDice(v2, 'dice2');
+        const dice1El = document.getElementById('dice1');
+        const dice2El = document.getElementById('dice2');
+        
+        dice1El.classList.add('rolling');
+        dice2El.classList.add('rolling');
+        
+        setTimeout(() => {
+            let v1 = Math.floor(Math.random() * 6) + 1;
+            let v2 = Math.floor(Math.random() * 6) + 1;
+            
+            drawDice(v1, 'dice1');
+            drawDice(v2, 'dice2');
+            
+            dice1El.classList.remove('rolling');
+            dice2El.classList.remove('rolling');
+            
+            const sum = v1 + v2;
+            const resultEl = document.getElementById('dice-result');
+            resultEl.textContent = `결과: ${v1} + ${v2} = ${sum}`;
+        }, 600);
     }
+
+    // 캔버스 반응형 조정
+    function resizeCanvas() {
+        const container = document.querySelector('.ladder-area');
+        if(container) {
+            const maxWidth = Math.min(600, container.clientWidth - 40);
+            canvas.style.width = maxWidth + 'px';
+            canvas.style.height = (maxWidth * 400 / 600) + 'px';
+        }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', resizeCanvas);
 </script>
 </body>
 </html>
