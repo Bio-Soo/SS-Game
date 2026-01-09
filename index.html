@@ -6,7 +6,9 @@
   <title>프리미엄 게임 센터</title>
   <style>
     :root { 
-      --naver-green: #03c75a; --bg-gray: #0b0f14; --text-white: #e6eef9; --accent: #6ee7ff;
+      --naver-green: #03c75a; --bg-gray: #0b0f14; --text-white: #e6eef9; 
+      --accent: #6ee7ff; /* 사다리 하이라이트 색상 */
+      --line-default: #3d4b5d; /* 기본 사다리 색상 */
     }
     body { 
       margin:0; font-family: 'Malgun Gothic', sans-serif; background: var(--bg-gray); color: var(--text-white);
@@ -22,37 +24,19 @@
     }
     .img-btn:hover { transform: scale(1.03); filter: brightness(1.2); border-color: var(--accent); }
 
-    /* 1. 메인 페이지 */
-    #mainPage {
-      height: 100vh; width: 100%;
-      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), 
-                  url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&w=1600&q=80');
-      background-size: cover; background-position: center;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-    }
+    /* 네비게이션 및 레이아웃 (이전과 동일) */
+    #mainPage { height: 100vh; width: 100%; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&w=1600&q=80'); background-size: cover; background-position: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .main-selector { display: flex; gap: 40px; }
-    .menu-card {
-      width: 220px; height: 300px; background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(15px); border: 2px solid var(--accent); border-radius: 20px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      cursor: pointer; transition: 0.3s;
-    }
-    .menu-card:hover { transform: translateY(-10px); background: rgba(110, 231, 255, 0.2); }
-
-    /* 2. 게임 페이지 공통 레이아웃 */
+    .menu-card { width: 220px; height: 300px; background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); border: 2px solid var(--accent); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
     #gamePage { display: none; padding: 20px; min-height: 100vh; text-align: center; position: relative; }
     .top-nav { position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 100; }
     .nav-btn { height: 40px; min-width: 80px; }
-
-    /* 사다리 레이아웃 */
     .preset-btns { display: flex; gap: 12px; justify-content: center; margin: 60px 0 20px; }
     .ladder-board { position: relative; display: inline-block; margin-top: 20px; }
     .label-grid { display: flex; width: 800px; justify-content: space-around; margin: 10px 0; }
-    .input-box input {
-      width: 70px; padding: 8px 0; background: #1a222d; color: white;
-      border: 1px solid #3d4b5d; border-radius: 6px; text-align: center; font-size: 14px;
-    }
+    .input-box input { width: 70px; padding: 8px 0; background: #1a222d; color: white; border: 1px solid #3d4b5d; border-radius: 6px; text-align: center; font-size: 14px; }
     canvas { background: transparent; display: block; z-index: 1; position: relative; }
+    
     #playerPiece {
       position: absolute; width: 28px; height: 28px;
       background-image: url('https://cdn-icons-png.flaticon.com/128/802/802340.png');
@@ -60,20 +44,12 @@
       display: none; z-index: 10; pointer-events: none; transform: translate(-50%, -100%);
     }
 
-    /* 3. 주사위 게임 (완전 중앙 배치) */
-    .dice-screen {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      height: 90vh;
-    }
+    /* 주사위 디자인 (이전과 동일) */
+    .dice-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
     .dice-row { display: flex; gap: 40px; margin-bottom: 40px; }
-    .dice {
-      width: 120px; height: 120px; background: white; border-radius: 20px;
-      position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      background-size: cover; background-position: center;
-    }
+    .dice { width: 120px; height: 120px; background: white; border-radius: 20px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background-size: cover; background-position: center; }
     .dot { width: 20px; height: 20px; background: #333; border-radius: 50%; position: absolute; transform: translate(-50%, -50%); }
     .roll-btn { width: 250px; height: 70px; font-size: 22px; }
-
     .rolling { animation: shake 0.1s infinite; }
     @keyframes shake { 0% {transform:rotate(0deg)} 50% {transform:rotate(5deg)} 100% {transform:rotate(-5deg)} }
   </style>
@@ -114,10 +90,7 @@
     </div>
 
     <div id="diceGame" class="dice-screen" style="display:none;">
-      <div class="dice-row">
-        <div id="dice1" class="dice"></div>
-        <div id="dice2" class="dice"></div>
-      </div>
+      <div class="dice-row"> <div id="dice1" class="dice"></div> <div id="dice2" class="dice"></div> </div>
       <button class="img-btn roll-btn" onclick="rollDices()">주사위 굴리기</button>
     </div>
   </div>
@@ -126,45 +99,38 @@
   const canvas = document.getElementById('ladderCanvas');
   const ctx = canvas.getContext('2d');
   const piece = document.getElementById('playerPiece');
-  let state = { n: 5, h: 12, links: [], isMoving: false, generated: false };
+  let state = { n: 5, h: 12, links: [], isMoving: false, generated: false, path: [] };
+
+  // --- 설정값 (여기서 조절하세요!) ---
+  const LADDER_BOLD = 3;       // 일반 세로선 굵기
+  const LINK_BOLD = 4;         // 일반 가로선 굵기
+  const HIGHLIGHT_BOLD = 6;    // 말이 지나갈 때 하이라이트 굵기
+  const MOVE_SPEED = 150;      // 말 이동 속도 (숫자가 작을수록 빠름)
 
   function showGame(type) {
     document.getElementById('mainPage').style.display = 'none';
     document.getElementById('gamePage').style.display = 'block';
-    
-    // 네비게이션 버튼 제어
     document.getElementById('navToDice').style.display = type === 'ladder' ? 'block' : 'none';
     document.getElementById('navToLadder').style.display = type === 'dice' ? 'block' : 'none';
-
     document.getElementById('ladderGame').style.display = type === 'ladder' ? 'block' : 'none';
     document.getElementById('diceGame').style.display = type === 'dice' ? 'block' : 'none';
-
-    if(type === 'ladder') {
-        state.generated = false; // 진입 시 미완성 상태
-        applyPreset(5);
-    }
+    if(type === 'ladder') { applyPreset(5); }
     if(type === 'dice') { drawDice(1, 'dice1'); drawDice(1, 'dice2'); }
   }
 
-  function goHome() {
-    document.getElementById('mainPage').style.display = 'flex';
-    document.getElementById('gamePage').style.display = 'none';
-  }
+  function goHome() { document.getElementById('mainPage').style.display = 'flex'; document.getElementById('gamePage').style.display = 'none'; }
 
-  // --- 사다리 로직 ---
   function getX(idx) { return (canvas.width / state.n) * idx + (canvas.width / state.n / 2); }
 
   function applyPreset(count) {
-    state.n = count;
-    state.generated = false;
-    state.links = [];
+    state.n = count; state.generated = false; state.links = []; state.path = [];
     const topRow = document.getElementById('topInputs'), botRow = document.getElementById('bottomInputs');
     topRow.innerHTML = ''; botRow.innerHTML = '';
     for(let i=0; i<count; i++) {
       topRow.innerHTML += `<div class="input-box"><input type="text" value="${i+1}" onclick="startLadder(${i})"></div>`;
       botRow.innerHTML += `<div class="input-box"><input type="text" value="?"></div>`;
     }
-    drawLadder(); // 빈 사다리 그리기
+    drawLadder();
   }
 
   function generateLadder() {
@@ -173,20 +139,21 @@
     for(let y=0; y<state.h; y++) {
       for(let x=0; x<state.n-1; x++) if(Math.random() < 0.5) { state.links[y].push(x); x++; }
     }
-    state.generated = true;
-    drawLadder();
+    state.generated = true; state.path = []; drawLadder();
   }
 
   function drawLadder() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // 기본 세로선
-    ctx.strokeStyle = '#3d4b5d'; ctx.lineWidth = 2;
+    
+    // 1. 기본 배경 사다리 그리기
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#3d4b5d'; 
+    ctx.lineWidth = LADDER_BOLD;
     for(let i=0; i<state.n; i++) {
       ctx.beginPath(); ctx.moveTo(getX(i), 0); ctx.lineTo(getX(i), canvas.height); ctx.stroke();
     }
-    // 생성된 경우에만 가로선 그리기
     if(state.generated) {
-        ctx.strokeStyle = '#6ee7ff'; ctx.lineWidth = 4;
+        ctx.lineWidth = LINK_BOLD;
         const dy = canvas.height / (state.h + 1);
         state.links.forEach((row, y) => {
             row.forEach(x => {
@@ -194,62 +161,71 @@
             });
         });
     }
+
+    // 2. 실시간 하이라이트 경로 그리기
+    if(state.path.length > 1) {
+        ctx.strokeStyle = '#6ee7ff'; 
+        ctx.lineWidth = HIGHLIGHT_BOLD;
+        ctx.beginPath();
+        ctx.moveTo(state.path[0].x, state.path[0].y);
+        for(let i=1; i<state.path.length; i++) {
+            ctx.lineTo(state.path[i].x, state.path[i].y);
+        }
+        ctx.stroke();
+    }
   }
 
   async function startLadder(idx) {
     if(!state.generated || state.isMoving) return; 
-    state.isMoving = true;
+    state.isMoving = true; state.path = [{x: getX(idx), y: 0}];
+    
     const dy = canvas.height / (state.h + 1);
     let curCol = idx, curX = getX(curCol), curY = 0;
     piece.style.display = 'block';
+
     for(let y=0; y<state.h; y++) {
-      await animate(curX, (y+1)*dy); curY = (y+1)*dy;
+      const nextY = (y+1)*dy;
+      await animate(curX, nextY); curY = nextY;
       let nx = curX;
       if(state.links[y].includes(curCol)) { curCol++; nx = getX(curCol); }
       else if(state.links[y].includes(curCol-1)) { curCol--; nx = getX(curCol); }
       if(nx !== curX) { await animate(nx, curY); curX = nx; }
     }
-    await animate(curX, canvas.height); state.isMoving = false;
+    await animate(curX, canvas.height);
+    state.isMoving = false;
   }
 
   function animate(tx, ty) {
     return new Promise(res => {
-      const sx = parseFloat(piece.style.left || 0), sy = parseFloat(piece.style.top || 0);
+      const sx = parseFloat(piece.style.left || getX(state.path[0].idx)), sy = parseFloat(piece.style.top || 0);
       const start = performance.now();
       function step(now) {
-        const p = Math.min((now - start) / 160, 1);
-        piece.style.left = sx + (tx-sx)*p + 'px'; piece.style.top = sy + (ty-sy)*p + 'px';
+        const p = Math.min((now - start) / MOVE_SPEED, 1);
+        const nowX = sx + (tx-sx)*p;
+        const nowY = sy + (ty-sy)*p;
+        piece.style.left = nowX + 'px'; piece.style.top = nowY + 'px';
+        
+        // 경로 데이터 추가 및 재그리기
+        state.path.push({x: nowX, y: nowY});
+        drawLadder();
+
         if(p < 1) requestAnimationFrame(step); else res();
       }
       requestAnimationFrame(step);
     });
   }
 
-  // --- 주사위 로직 ---
+  // --- 주사위 로직 (이전과 동일) ---
   function drawDice(num, id) {
-    const el = document.getElementById(id);
-    el.innerHTML = '';
-    const dots = {
-      1: [[50,50]], 2: [[25,25], [75,75]], 3: [[25,25], [50,50], [75,75]],
-      4: [[25,25], [25,75], [75,25], [75,75]], 5: [[25,25], [25,75], [50,50], [75,25], [75,75]],
-      6: [[25,25], [25,50], [25,75], [75,25], [75,50], [75,75]]
-    };
-    dots[num].forEach(pos => {
-      const d = document.createElement('div'); d.className = 'dot';
-      d.style.left = pos[0]+'%'; d.style.top = pos[1]+'%'; el.appendChild(d);
-    });
+    const el = document.getElementById(id); el.innerHTML = '';
+    const dots = { 1: [[50,50]], 2: [[25,25], [75,75]], 3: [[25,25], [50,50], [75,75]], 4: [[25,25], [25,75], [75,25], [75,75]], 5: [[25,25], [25,75], [50,50], [75,25], [75,75]], 6: [[25,25], [25,50], [25,75], [75,25], [75,50], [75,75]] };
+    dots[num].forEach(pos => { const d = document.createElement('div'); d.className = 'dot'; d.style.left = pos[0]+'%'; d.style.top = pos[1]+'%'; el.appendChild(d); });
   }
-
   function rollDices() {
     const d1 = document.getElementById('dice1'), d2 = document.getElementById('dice2');
     d1.classList.add('rolling'); d2.classList.add('rolling');
-    setTimeout(() => {
-      const v1 = Math.floor(Math.random()*6)+1, v2 = Math.floor(Math.random()*6)+1;
-      drawDice(v1, 'dice1'); drawDice(v2, 'dice2');
-      d1.classList.remove('rolling'); d2.classList.remove('rolling');
-    }, 600);
+    setTimeout(() => { const v1 = Math.floor(Math.random()*6)+1, v2 = Math.floor(Math.random()*6)+1; drawDice(v1, 'dice1'); drawDice(v2, 'dice2'); d1.classList.remove('rolling'); d2.classList.remove('rolling'); }, 600);
   }
 </script>
 </body>
 </html>
-
