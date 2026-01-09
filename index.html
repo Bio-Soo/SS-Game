@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>멀티 추첨 도구 | 사다리 & 주사위</title>
+  <style>
+    :root { 
+      --bg:#0b0f14; 
+      --card:#111826; 
+      --text:#e6eef9; 
+      --muted:#9bb0c7; 
+      --line:#2b3b55; 
+      --accent:#6ee7ff; 
+      --good:#a7f3d0; 
+      /* 배경 이미지를 설정하려면 아래 url에 이미지 주소를 넣으세요 */
+      --bg-image: url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&w=1200&q=80');
+    }
+    
+    body { 
+      margin:0; font-family: system-ui, -apple-system, sans-serif; 
+      background: var(--bg-image) no-repeat center center fixed; 
+      background-size: cover;
+      color:var(--text); 
+      min-height: 100vh;
+    }
+
+    .wrap { max-width:1100px; margin:0 auto; padding:20px 16px 40px; background: rgba(7, 10, 15, 0.7); min-height: 100vh; }
+    
+    /* 탭 메뉴 */
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
+    .tab-btn { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 10px 20px; font-weight: bold; transition: 0.3s; }
+    .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
+
+    .content-section { display: none; }
+    .content-section.active { display: block; }
+
+    /* 레이아웃 */
+    .grid { display:grid; grid-template-columns: 360px 1fr; gap:14px; }
+    .card { background:rgba(17,24,38,0.95); border:1px solid rgba(43,59,85,.6); border-radius:14px; padding:20px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+    .row { display:flex; gap:10px; align-items:center; margin-bottom:15px; }
+    
+    label { font-size:12px; color:var(--muted); display:block; margin-bottom:5px; }
+    input, textarea, select { width:100%; background:#0c1422; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:10px; box-sizing: border-box; }
+    
+    button { background: #1e293b; color:var(--text); border:1px solid var(--accent); padding:12px; border-radius:10px; cursor:pointer; font-weight:700; flex: 1; transition: 0.2s; }
+    button:hover { background: var(--accent); color: #000; }
+    button.run-btn { background: var(--accent); color: #000; }
+
+    canvas { width:100%; height:auto; background:#0a1220; border-radius:10px; }
+    .topLabels, .bottomLabels { display:grid; gap:6px; margin:10px 0; }
+    .pill { font-size:13px; padding:8px; border-radius:8px; border:1px solid var(--line); background:rgba(12,20,34,0.8); text-align:center; white-space: nowrap; overflow: hidden; }
+    .pill.active { border-color: var(--accent); color: var(--accent); font-weight: bold; }
+    .pill.good { border-color: var(--good); color: var(--good); font-weight: bold; }
+
+    /* 주사위 스타일 */
+    .dice-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; }
+    .dice-row { display: flex; gap: 30px; margin-bottom: 30px; }
+    .dice { 
+      width: 100px; height: 100px; background: white; border-radius: 15px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; color: #333; font-weight: bold;
+      background-size: cover; background-position: center;
+      box-shadow: 0 0 20px rgba(110,231,255,0.3);
+    }
+    .sum-box { font-size: 24px; color: var(--accent); font-weight: bold; margin-bottom: 20px; }
+    
+    .rolling { animation: shake 0.1s infinite; }
+    @keyframes shake { 0% {transform: rotate(0deg);} 50% {transform: rotate(5deg);} 100% {transform: rotate(-5deg);} }
+
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab('ladder')">🪜 사다리 타기</button>
+    <button class="tab-btn" onclick="openTab('dice')">🎲 주사위 굴리기</button>
+  </div>
+
+  <div id="ladder" class="content-section active">
+    <div class="grid">
+      <div class="card">
+        <div class="row">
+          <div style="flex:1"><label>인원 (2~12)</label><input id="nLines" type="number" value="6" min="2" max="12" /></div>
+          <div style="flex:1"><label>사다리 높이</label><input id="height" type="number" value="18" min="5" max="50" /></div>
+        </div>
+        <div class="row">
+          <div style="flex:1"><label>참가자 명단</label><textarea id="names" rows="6">A\nB\nC\nD\nE\nF</textarea></div>
+          <div style="flex:1"><label>항목/벌칙</label><textarea id="prizes" rows="6">당첨\n꽝\n꽝\n당첨\n꽝\n꽝</textarea></div>
+        </div>
+        <div class="row">
+          <button onclick="generateLadder()">사다리 재생성</button>
+        </div>
+        <div class="row">
+          <select id="pick"></select>
+          <button class="run-btn" onclick="runLadder()">타기!</button>
+        </div>
+        <div id="out" style="padding:10px; color:var(--accent); font-weight:bold; text-align:center;"></div>
+      </div>
+
+      <div class="card">
+        <div id="topLabels" class="topLabels"></div>
+        <canvas id="cv" width="800" height="500"></canvas>
+        <div id="bottomLabels" class="bottomLabels"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="dice" class="content-section">
+    <div class="card dice-container">
+      <div class="dice-row">
+        <div id="d1" class="dice">?</div>
+        <div id="d2" class="dice">?</div>
+      </div>
+      <div id="diceSum" class="sum-box">합계: -</div>
+      <button onclick="rollDices()" style="max-width:250px; width:100%;">주사위 2개 굴리기</button>
+      <p style="margin-top:20px; color:var(--muted); font-size:12px;">주사위 이미지는 코드 내 diceImages에서 수정 가능합니다.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- 공통 탭 설정 ---
+  function openTab(id) {
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+  // --- 주사위 로직 ---
+  const diceImages = {
+    1: '', // 이미지 주소가 있다면 여기에 입력 (예: 'dice1.png')
+    2: '', 3: '', 4: '', 5: '', 6: ''
+  };
+
+  function rollDices() {
+    const d1 = document.getElementById('d1');
+    const d2 = document.getElementById('d2');
+    d1.classList.add('rolling'); d2.classList.add('rolling');
+
+    setTimeout(() => {
+      const v1 = Math.floor(Math.random() * 6) + 1;
+      const v2 = Math.floor(Math.random() * 6) + 1;
+      
+      updateDiceDisplay(d1, v1);
+      updateDiceDisplay(d2, v2);
+      
+      document.getElementById('diceSum').innerText = `합계: ${v1 + v2}`;
+      d1.classList.remove('rolling'); d2.classList.remove('rolling');
+    }, 600);
+  }
+
+  function updateDiceDisplay(el, val) {
+    if (diceImages[val]) {
+      el.style.backgroundImage = `url('${diceImages[val]}')`;
+      el.innerText = '';
+    } else {
+      el.style.backgroundImage = 'none';
+      el.innerText = val;
+    }
+  }
+
+  // --- 사다리 로직 ---
+  const cv = document.getElementById("cv");
+  const ctx = cv.getContext("2d");
+  let state = { n: 6, h: 18, names: [], prizes: [], links: [], running: false };
+
+  function generateLadder() {
+    state.n = parseInt(document.getElementById("nLines").value);
+    state.h = parseInt(document.getElementById("height").value);
+    state.names = document.getElementById("names").value.split('\n').filter(x => x.trim());
+    state.prizes = document.getElementById("prizes").value.split('\n').filter(x => x.trim());
+    
+    // 인원수 맞추기
+    while(state.names.length < state.n) state.names.push("참가자" + (state.names.length+1));
+    while(state.prizes.length < state.n) state.prizes.push("항목" + (state.prizes.length+1));
+    
+    // 가로선 생성
+    state.links = Array.from({length: state.h}, () => []);
+    for (let y=0; y<state.h; y++) {
+      for (let x=0; x<state.n-1; x++) {
+        if (Math.random() < 0.4) {
+          state.links[y].push(x);
+          x++; // 연속 가로선 방지
+        }
+      }
+    }
+    
+    const sel = document.getElementById("pick");
+    sel.innerHTML = "";
+    state.names.slice(0, state.n).forEach((name, i) => {
+      sel.add(new Option(name, i));
+    });
+
+    renderLabels();
+    draw();
+  }
+
+  function draw(path = null, step = -1) {
+    const W = cv.width, H = cv.height;
+    ctx.clearRect(0,0,W,H);
+    const px = 50, py = 30;
+    const dx = (W - px*2) / (state.n - 1);
+    const dy = (H - py*2) / state.h;
+
+    // 세로선
+    ctx.strokeStyle = "#2b3b55"; ctx.lineWidth = 2;
+    for(let i=0; i<state.n; i++) {
+      ctx.beginPath(); ctx.moveTo(px+i*dx, py); ctx.lineTo(px+i*dx, H-py); ctx.stroke();
+    }
+    // 가로선
+    ctx.strokeStyle = "#6ee7ff";
+    state.links.forEach((row, y) => {
+      row.forEach(x => {
+        ctx.beginPath(); ctx.moveTo(px+x*dx, py+(y+0.5)*dy); ctx.lineTo(px+(x+1)*dx, py+(y+0.5)*dy); ctx.stroke();
+      });
+    });
+
+    // 경로 그리기
+    if (path) {
+      ctx.strokeStyle = "#a7f3d0"; ctx.lineWidth = 5; ctx.beginPath();
+      for(let i=0; i <= step; i++) {
+        const p = path[i];
+        const curX = px + p.x*dx, curY = py + p.y*dy;
+        if(i===0) ctx.moveTo(curX, curY); else ctx.lineTo(curX, curY);
+      }
+      ctx.stroke();
+    }
+  }
+
+  function renderLabels(activeTop = -1, activeBot = -1) {
+    const top = document.getElementById("topLabels"), bot = document.getElementById("bottomLabels");
+    top.style.gridTemplateColumns = `repeat(${state.n}, 1fr)`;
+    bot.style.gridTemplateColumns = `repeat(${state.n}, 1fr)`;
+    top.innerHTML = state.names.slice(0, state.n).map((n, i) => `<div class="pill ${i===activeTop?'active':''}">${n}</div>`).join('');
+    bot.innerHTML = state.prizes.slice(0, state.n).map((p, i) => `<div class="pill ${i===activeBot?'good':''}">${p}</div>`).join('');
+  }
+
+  async function runLadder() {
+    if(state.running) return;
+    state.running = true;
+    let currX = parseInt(document.getElementById("pick").value);
+    let path = [{x: currX, y: 0}];
+    
+    for(let y=0; y<state.h; y++) {
+      path.push({x: currX, y: y+0.5});
+      if(state.links[y].includes(currX)) currX++;
+      else if(state.links[y].includes(currX-1)) currX--;
+      path.push({x: currX, y: y+0.5});
+    }
+    path.push({x: currX, y: state.h+0.5});
+
+    for(let i=0; i<path.length; i++) {
+      draw(path, i);
+      await new Promise(r => setTimeout(r, 40));
+    }
+    
+    renderLabels(parseInt(document.getElementById("pick").value), currX);
+    document.getElementById("out").innerText = `결과: ${state.prizes[currX]}!`;
+    state.running = false;
+  }
+
+  window.onload = generateLadder;
+</script>
+
+</body>
+</html>
